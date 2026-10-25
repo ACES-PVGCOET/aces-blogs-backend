@@ -2,7 +2,7 @@
  * Smoke test: the app boots with every module wired and the database is reachable.
  * Each module owner adds their own test/<module>.e2e-spec.ts next to this one.
  *
- *   PowerShell:  $env:DB_NAME="blog_app_test"; npm run test:e2e
+ *   PowerShell:  $env:DATABASE_URL="postgresql://postgres:replace_me@localhost:5432/blog_app_test?schema=public"; npm run test:e2e
  *
  * Use a SEPARATE database whose name contains "test": tests may drop or alter its tables.
  */
@@ -15,10 +15,9 @@ describe('App', () => {
   let app: INestApplication;
 
   beforeAll(async () => {
-    if (!(process.env.DB_NAME ?? '').toLowerCase().includes('test')) {
-      throw new Error('Set DB_NAME to a database whose name contains "test", e.g. blog_app_test');
+    if (!(process.env.DATABASE_URL ?? '').toLowerCase().includes('test')) {
+      throw new Error('Set DATABASE_URL to a database whose name contains "test", e.g. .../blog_app_test');
     }
-    process.env.DB_SYNC = 'true';
     const moduleRef = await Test.createTestingModule({ imports: [AppModule] }).compile();
     app = moduleRef.createNestApplication();
     app.setGlobalPrefix('api');
