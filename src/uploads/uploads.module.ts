@@ -1,9 +1,5 @@
 import { Module } from '@nestjs/common';
-
-/**
- * blog-uploads-api  (branch: feat/blog-uploads-api)
- * Add this module's controllers, providers and TypeOrmModule.forFeature([...]) here.
- * Don't edit app.module.ts: it already imports this module.
- */
-@Module({})
+import { UploadsController } from './uploads.controller.js';
+import { UploadsService } from './uploads.service.js';
+@Module({ controllers: [UploadsController], providers: [UploadsService] })
 export class UploadsModule {}

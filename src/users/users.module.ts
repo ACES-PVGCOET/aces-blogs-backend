@@ -1,9 +1,12 @@
-import { Module } from '@nestjs/common';
 
-/**
- * user-mgmt-api (users)  (branch: feat/user-mgmt-api)
- * Add this module's controllers, providers and TypeOrmModule.forFeature([...]) here.
- * Don't edit app.module.ts: it already imports this module.
- */
-@Module({})
+import { Module } from '@nestjs/common';
+import { UsersService } from './users.service.js';
+import { RoleChangeLogService } from './role-change-log.service.js';
+import { UsersController } from './users.controller.js';
+
+@Module({
+  controllers: [UsersController],
+  providers: [UsersService, RoleChangeLogService],
+  exports: [UsersService, RoleChangeLogService],
+})
 export class UsersModule {}

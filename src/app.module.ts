@@ -1,40 +1,30 @@
 import { Module } from '@nestjs/common';
-import { ConfigModule, ConfigService } from '@nestjs/config';
-import { TypeOrmModule } from '@nestjs/typeorm';
-import { AuthModule } from './auth';
-import { BlogModule } from './blog';
-import { CategoriesModule } from './categories';
-import { HealthController } from './health.controller';
-import { UploadsModule } from './uploads';
-import { UsersModule } from './users';
+import { ConfigModule } from '@nestjs/config';
 
-/**
- * Written once. Every teammate's module is already imported, so nobody needs to edit this file.
- * Entities register themselves: each module lists its own in TypeOrmModule.forFeature([...]).
- */
+import { PrismaModule } from './prisma/prisma.module.js';
+import { UsersModule } from './users/users.module.js';
+import { AuthModule } from './auth/auth.module.js';
+import { BlogsModule } from './blogs/blogs.module.js';
+import { ReviewerModule } from './reviewer/reviewer.module.js';
+import { CategoriesModule } from './categories/categories.module.js';
+import { UploadsModule } from './uploads/uploads.module.js';
+
+import { AppController } from './app.controller.js';
+import { AppService } from './app.service.js';
 @Module({
   imports: [
-    ConfigModule.forRoot({ isGlobal: true }),
-    TypeOrmModule.forRootAsync({
-      inject: [ConfigService],
-      useFactory: (config: ConfigService) => ({
-        type: 'postgres' as const,
-        host: config.get<string>('DB_HOST', 'localhost'),
-        port: Number(config.get('DB_PORT', 5432)),
-        username: config.get<string>('DB_USERNAME', 'postgres'),
-        password: config.get<string>('DB_PASSWORD', ''),
-        database: config.get<string>('DB_NAME', 'blog_app'),
-        autoLoadEntities: true,
-        // Only when you explicitly ask for it (DB_SYNC=true in your local .env). Production must use migrations.
-        synchronize: config.get<string>('DB_SYNC') === 'true',
-      }),
+    ConfigModule.forRoot({
+      isGlobal: true,
     }),
+    PrismaModule,
     UsersModule,
     AuthModule,
-    BlogModule,
+    BlogsModule,
+    ReviewerModule,
     CategoriesModule,
     UploadsModule,
   ],
-  controllers: [HealthController],
+  controllers: [AppController],
+  providers: [AppService],
 })
 export class AppModule {}
