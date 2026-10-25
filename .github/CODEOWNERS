@@ -1,0 +1,9 @@
+# Each person owns their module folder: GitHub will ask them to review changes there.
+# Replace the @handles and remove the leading "# " to turn a line on.
+# /src/users/        @handle-user-mgmt
+# /src/auth/         @handle-user-mgmt
+# /src/blog/         @handle-blog-post
+# /src/categories/   @handle-blog-cat
+# /src/uploads/      @handle-blog-uploads
+# /src/common/       @handle-team-lead
+# /.github/          @handle-team-lead
