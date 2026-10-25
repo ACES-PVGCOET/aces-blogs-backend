@@ -4,15 +4,6 @@ Backend for the blog platform. **Stack:** NestJS (TypeScript) + PostgreSQL + Typ
 
 Readers read, **writers** (authors) write, **reviewers** approve every blog before it is published, **admins** manage everything.
 
-## Who builds what
-Each module is one folder and one branch. Work only inside your own folder.
-
-| Module (API) | Folder | Branch | Owner |
-|---|---|---|---|
-| user-mgmt-api | `src/users`, `src/auth` | `feat/user-mgmt-api` | _fill in_ |
-| blog-post-api | `src/blog` | `feat/blog-post-api` | _fill in_ |
-| blog-cat-api | `src/categories` | `feat/blog-cat-api` | _fill in_ |
-| blog-uploads-api | `src/uploads` | `feat/blog-uploads-api` | _fill in_ |
 
 Read [`docs/CONTRIBUTING.md`](docs/CONTRIBUTING.md) before your first commit and [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md) for the rules modules share. Your task list is in `docs/api/<your-module>.md`.
 
