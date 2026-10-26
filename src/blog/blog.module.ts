@@ -1,9 +1,10 @@
 import { Module } from '@nestjs/common';
+import { BlogController } from './blog.controller';
+import { BlogService } from './blog.service';
 
-/**
- * blog-post-api  (branch: feat/blog-post-api)
- * Add this module's controllers, providers and PrismaService (global, no import needed); add your models to prisma/schema.prisma here.
- * Don't edit app.module.ts: it already imports this module.
- */
-@Module({})
+@Module({
+  controllers: [BlogController],
+  providers: [BlogService],
+  exports: [BlogService],
+})
 export class BlogModule {}
