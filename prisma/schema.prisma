@@ -9,3 +9,135 @@ datasource db {
   provider = "postgresql"
   url      = env("DATABASE_URL")
 }
+
+enum UserRole {
+  READER
+  WRITER
+  REVIEWER
+  ADMIN
+}
+
+enum UserStatus {
+  ACTIVE
+  BLOCKED
+  DELETED
+}
+
+enum BlogStatus {
+  DRAFT
+  UNDER_REVIEW
+  REVISION_DRAFT
+  PUBLISHED
+  REJECT
+  ARCHIVED
+  DELETED
+}
+
+model User {
+  id           String @id @default(uuid()) @db.Uuid
+  name         String
+  email        String @unique
+  passwordHash String
+
+  profileImg String?
+  linkedIn   String?
+  bio        String? @db.Text
+
+  role           UserRole   @default(READER)
+  status         UserStatus @default(ACTIVE)
+  sessionVersion Int        @default(0)
+
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("modified_at")
+
+  authoredBlogs       Blog[]          @relation("BlogAuthor")
+  reviewedBlogs       Blog[]          @relation("BlogReviewer")
+  createdBlogContent  BlogContent[]   @relation("BlogContentCreator")
+  blogAuditEvents     BlogAuditLog[]  @relation("BlogAuditActor")
+  roleChangesReceived RoleChangeLog[] @relation("RoleChangeTarget")
+  roleChangesMade     RoleChangeLog[] @relation("RoleChangeActor")
+}
+
+model Blog {
+  id           String   @id @default(uuid()) @db.Uuid
+  title        String   @db.VarChar(200)
+  slug         String   @unique @db.VarChar(220)
+  excerpt      String?  @db.VarChar(500)
+  thumbnailUrl String?  @map("thumbnail_url")
+  category     String   @db.VarChar(100)
+  tags         String[] @default([])
+
+  authorId   String  @map("author_id") @db.Uuid
+  reviewerId String? @map("reviewer_id") @db.Uuid
+
+  status BlogStatus @default(DRAFT)
+
+  latestRevisionVersion  Int  @default(0) @map("latest_revision_version")
+  latestPublishedVersion Int? @map("latest_published_version")
+
+  reviewNote  String?   @map("review_note") @db.Text
+  submittedAt DateTime? @map("submitted_at")
+  publishedAt DateTime? @map("published_at")
+  deletedAt   DateTime? @map("deleted_at")
+
+  createdAt  DateTime @default(now()) @map("created_at")
+  modifiedAt DateTime @updatedAt @map("modified_at")
+
+  author   User  @relation("BlogAuthor", fields: [authorId], references: [id], onDelete: Restrict)
+  reviewer User? @relation("BlogReviewer", fields: [reviewerId], references: [id], onDelete: Restrict)
+
+  contents  BlogContent[]
+  auditLogs BlogAuditLog[]
+
+  @@index([authorId, status])
+  @@index([status, publishedAt])
+  @@index([createdAt])
+  @@map("blogs")
+}
+
+model BlogContent {
+  id          String   @id @default(uuid()) @db.Uuid
+  blogId      String   @map("blog_id") @db.Uuid
+  version     Int
+  content     Json     @db.JsonB
+  createdById String   @map("created_by_id") @db.Uuid
+  createdAt   DateTime @default(now()) @map("created_at")
+
+  blog      Blog @relation(fields: [blogId], references: [id], onDelete: Restrict)
+  createdBy User @relation("BlogContentCreator", fields: [createdById], references: [id], onDelete: Restrict)
+
+  @@unique([blogId, version], map: "blog_content_blog_id_version_key")
+  @@index([createdById])
+  @@map("blog_content")
+}
+
+model BlogAuditLog {
+  id          String   @id @default(uuid()) @db.Uuid
+  blogId      String   @map("blog_id") @db.Uuid
+  action      String   @db.VarChar(100)
+  performedBy String   @map("performed_by") @db.Uuid
+  createdAt   DateTime @default(now()) @map("created_at")
+
+  blog  Blog @relation(fields: [blogId], references: [id], onDelete: Restrict)
+  actor User @relation("BlogAuditActor", fields: [performedBy], references: [id], onDelete: Restrict)
+
+  @@index([blogId, createdAt])
+  @@index([performedBy, createdAt])
+  @@map("blog_audit_log")
+}
+
+model RoleChangeLog {
+  id           String   @id @default(uuid()) @db.Uuid
+  targetUserId String   @map("target_user_id") @db.Uuid
+  changedBy    String   @map("changed_by") @db.Uuid
+  oldRole      UserRole @map("old_role")
+  newRole      UserRole @map("new_role")
+  createdAt    DateTime @default(now()) @map("created_at")
+
+  targetUser User @relation("RoleChangeTarget", fields: [targetUserId], references: [id], onDelete: Restrict)
+  actor      User @relation("RoleChangeActor", fields: [changedBy], references: [id], onDelete: Restrict)
+
+  @@index([targetUserId, createdAt])
+  @@index([changedBy, createdAt])
+  @@map("role_change_log")
+}
