@@ -1,9 +1,55 @@
-import { Module } from '@nestjs/common';
 
-/**
- * user-mgmt-api (login, JWT strategy)  (branch: feat/user-mgmt-api)
- * Add this module's controllers, providers and PrismaService (global, no import needed); add your models to prisma/schema.prisma here.
- * Don't edit app.module.ts: it already imports this module.
- */
-@Module({})
+import { Module } from '@nestjs/common';
+import { JwtModule } from '@nestjs/jwt';
+import { PassportModule } from '@nestjs/passport';
+import { ConfigService } from '@nestjs/config';
+
+import { UsersModule } from '../users/users.module.js';
+
+import { AuthService } from './auth.service.js';
+import { JwtStrategy } from './jwt.strategy.js';
+
+import {
+  JwtAuthGuard,
+} from './guards/jwt-auth.guard.js';
+
+import {
+  RolesGuard,
+} from './guards/roles.guards.js';
+
+@Module({
+  imports: [
+    UsersModule,
+    PassportModule,
+
+    JwtModule.registerAsync({
+      inject: [ConfigService],
+
+      useFactory: (config: ConfigService) => ({
+        secret:
+          config.getOrThrow<string>('JWT_SECRET'),
+
+        signOptions: {
+          expiresIn: '15m',
+          issuer: 'aces-blog-api',
+          audience: 'aces-blog-web',
+        },
+      }),
+    }),
+  ],
+
+  providers: [
+    AuthService,
+    JwtStrategy,
+    JwtAuthGuard,
+    RolesGuard,
+  ],
+
+  exports: [
+    AuthService,
+    JwtAuthGuard,
+    RolesGuard,
+  ],
+})
+
 export class AuthModule {}
