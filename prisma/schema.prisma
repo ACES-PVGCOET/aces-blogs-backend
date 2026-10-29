@@ -141,3 +141,46 @@ model RoleChangeLog {
   @@map("role_change_log")
 
 }
+
+enum BlogStatus {
+  DRAFT
+  PUBLISHED
+  UNDER_REVIEW
+  REVISION_DRAFT
+  DELETED
+  ARCHIVED
+  REJECT
+}
+
+model Blog {
+  id                     String        @id @default(uuid()) @db.Uuid
+  slug                   String        @unique @db.VarChar(255)
+  title                  String        @db.VarChar(255)
+  thumbnail              String?       @db.VarChar(500)
+  author                 String        @db.VarChar(100)
+  reviewer               String?       @db.VarChar(100)
+  status                 BlogStatus    @default(DRAFT)
+  category               String?       @db.VarChar(100)
+  tags                   String[]      @default([])
+  latestRevisionVersion  Int           @default(0)
+  latestPublishedVersion Int           @default(0)
+  createdAt              DateTime      @default(now())
+  modifiedAt             DateTime      @updatedAt
+  contents               BlogContent[]
+
+  @@index([author, status])
+  @@map("blogs")
+}
+
+model BlogContent {
+  id        String   @id @default(uuid()) @db.Uuid
+  blogId    String   @db.Uuid
+  blog      Blog     @relation(fields: [blogId], references: [id], onDelete: Cascade)
+  version   Int
+  content   Json     @db.JsonB
+  createdAt DateTime @default(now())
+
+  @@unique([blogId, version], map: "UQ_blog_content_version")
+  @@map("blog_contents")
+}
+
