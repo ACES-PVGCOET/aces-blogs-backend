@@ -35,7 +35,7 @@ Protect a route:
 |---|---|---|
 | Author role name | `WRITER` | Matches the spec |
 | Blog status model | Split: `blog.status` = lifecycle (ACTIVE / ARCHIVED / DELETED), `revision.status` = workflow (DRAFT / UNDER_REVIEW / PUBLISHED / REJECT) | Owner: blog-post |
-| Database schema | `DB_SYNC=true` locally only; production uses migrations | |
+| Database schema | Prisma: `prisma migrate dev` locally; production uses `prisma migrate deploy` | |
 
 Add a row here when the team agrees something new.
 

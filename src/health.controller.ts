@@ -1,13 +1,13 @@
 import { Controller, Get } from '@nestjs/common';
-import { DataSource } from 'typeorm';
+import { PrismaService } from './prisma';
 
 @Controller('health')
 export class HealthController {
-  constructor(private readonly dataSource: DataSource) {}
+  constructor(private readonly prisma: PrismaService) {}
 
   @Get()
   async check() {
-    await this.dataSource.query('SELECT 1'); // fails (500) if the database is unreachable
+    await this.prisma.$queryRaw`SELECT 1`; // fails (500) if the database is unreachable
     return { status: 'ok' };
   }
 }
