@@ -1,27 +1,27 @@
 import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
-import { AuthModule } from './auth';
-import { BlogModule } from './blog';
-import { CategoriesModule } from './categories';
-import { HealthController } from './health.controller';
-import { PrismaModule } from './prisma';
-import { UploadsModule } from './uploads';
-import { UsersModule } from './users';
 
-/**
- * Written once. Every teammate's module is already imported, so nobody needs to edit this file.
- * Database models live in prisma/schema.prisma; PrismaModule is global, so just inject PrismaService.
- */
+import { PrismaModule } from './prisma/prisma.module.js';
+import { UsersModule } from './users/users.module.js';
+import { AuthModule } from './auth/auth.module.js';
+import { BlogsModule } from './blogs/blogs.module.js';
+import { ReviewerModule } from './reviewer/reviewer.module.js';
+
+import { AppController } from './app.controller.js';
+import { AppService } from './app.service.js';
 @Module({
   imports: [
-    ConfigModule.forRoot({ isGlobal: true }),
+    ConfigModule.forRoot({
+      isGlobal: true,
+    }),
     PrismaModule,
     UsersModule,
     AuthModule,
-    BlogModule,
-    CategoriesModule,
-    UploadsModule,
+    BlogsModule,
+    ReviewerModule,
   ],
-  controllers: [HealthController],
+  controllers: [AppController],
+  providers: [AppService],
 })
 export class AppModule {}
+
