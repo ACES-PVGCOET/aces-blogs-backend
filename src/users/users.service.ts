@@ -193,6 +193,7 @@ export class UsersService {
     actorId: string,
     page = 1,
     limit = 10,
+    filters: { role?: UserRole; status?: UserStatus; search?: string } = {},
   ) {
     if (
       !Number.isInteger(page) ||
@@ -209,8 +210,15 @@ export class UsersService {
     return this.prisma.$transaction(async (tx) => {
       await this.requireAdmin(tx, actorId);
 
-      const where = {
-        status: { not: UserStatus.DELETED },
+      const where: Prisma.UserWhereInput = {
+        status: filters.status ?? { not: UserStatus.DELETED },
+        ...(filters.role ? { role: filters.role } : {}),
+        ...(filters.search?.trim() ? {
+          OR: [
+            { name: { contains: filters.search.trim(), mode: 'insensitive' } },
+            { email: { contains: filters.search.trim(), mode: 'insensitive' } },
+          ],
+        } : {}),
       };
 
       const [users, total] = await Promise.all([

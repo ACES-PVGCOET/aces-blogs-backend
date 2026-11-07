@@ -51,5 +51,4 @@ import {
     RolesGuard,
   ],
 })
-
 export class AuthModule {}

@@ -1,66 +1,61 @@
-# ==========================================
-# Environment variables and secrets
-# ==========================================
-.env
-.env.*
-!.env.example
+# compiled output
+/dist
+/node_modules
+/build
 
-# ==========================================
-# Dependencies
-# ==========================================
-node_modules/
+# TypeScript build cache
+*.tsbuildinfo
 
-# ==========================================
-# Build output and compiled files
-# ==========================================
-dist/
-build/
-coverage/
-
-# ==========================================
 # Logs
-# ==========================================
-logs/
+logs
 *.log
 npm-debug.log*
-yarn-debug.log*
 pnpm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+lerna-debug.log*
 
-# ==========================================
-# Operating system files
-# ==========================================
+# OS
 .DS_Store
-Thumbs.db
-Desktop.ini
 
-# ==========================================
-# IDE and editor files
-# ==========================================
+# Tests
+/coverage
+/.nyc_output
+
+# IDEs and editors
+/.idea
+.project
+.classpath
+.c9/
+*.launch
+.settings/
+*.sublime-workspace
+
+# IDE - VSCode
 .vscode/*
-!.vscode/extensions.json
 !.vscode/settings.json
-.idea/
-*.swp
-*.swo
+!.vscode/tasks.json
+!.vscode/launch.json
+!.vscode/extensions.json
 
-# ==========================================
-# Testing and temporary files
-# ==========================================
-.nyc_output/
-.tmp/
-temp/
-
-# ==========================================
-# Local databases
-# ==========================================
-*.sqlite
-*.sqlite3
-*.db
-
-# ==========================================
-# Environment-specific configuration
-# ==========================================
-.env.local
+# dotenv environment variable files
+.env
 .env.development.local
 .env.test.local
 .env.production.local
+.env.local
+
+# temp directory
+.temp
+.tmp
+
+# Runtime data
+pids
+*.pid
+*.seed
+*.pid.lock
+
+# Diagnostic reports (https://nodejs.org/api/report.html)
+report.[0-9]*.[0-9]*.[0-9]*.[0-9]*.json
+
+/src/generated/prisma

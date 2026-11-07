@@ -3,7 +3,6 @@ generator client {
   output              = "../src/generated/prisma"
   moduleFormat        = "esm"
   importFileExtension = "js"
-
 }
 
 datasource db {
@@ -139,7 +138,13 @@ model RoleChangeLog {
   @@index([targetUserId, createdAt])
   @@index([changedBy, createdAt])
   @@map("role_change_log")
+}
 
+model Category {
+  id        String   @id @default(uuid()) @db.Uuid
+  name      String   @unique @db.VarChar(100)
+  createdAt DateTime @default(now()) @map("created_at")
+  @@map("categories")
 }
 
 enum UserRole {
