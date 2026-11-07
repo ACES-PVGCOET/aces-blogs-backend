@@ -1,4 +1,4 @@
-import { resetDatabase, TEST_DATABASE_URL } from './database';
+import { resetDatabase, TEST_DATABASE_URL } from './database.js';
 
 /** Runs once before the e2e suites. The blog suites skip themselves when no test database URL is set. */
 export default async function setup() {

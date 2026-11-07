@@ -1,5 +1,5 @@
 import { randomBytes } from 'node:crypto';
-import { MAX_TAGS, TAG_MAX_LENGTH } from './admin.constants';
+import { MAX_TAGS, TAG_MAX_LENGTH } from './admin.constants.js';
 
 export function slugify(input: string, max = 80): string {
   return input

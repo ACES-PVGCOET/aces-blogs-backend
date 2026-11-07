@@ -1,5 +1,5 @@
 import { createParamDecorator, ExecutionContext } from '@nestjs/common';
-import { AuthenticatedUser } from './authenticated-user';
+import { AuthenticatedUser } from './authenticated-user.js';
 
 /** Inject the logged-in user: `create(@CurrentUser() user: AuthenticatedUser)` */
 export const CurrentUser = createParamDecorator(

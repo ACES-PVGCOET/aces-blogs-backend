@@ -1,4 +1,4 @@
-import { UserRole } from './enums';
+import { UserRole } from './enums.js';
 
 /**
  * What every module may rely on after JwtAuthGuard ran: `request.user` has at least these two fields.

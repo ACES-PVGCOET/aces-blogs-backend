@@ -6,11 +6,14 @@ import { UsersModule } from './users/users.module.js';
 import { AuthModule } from './auth/auth.module.js';
 import { BlogsModule } from './blogs/blogs.module.js';
 import { ReviewerModule } from './reviewer/reviewer.module.js';
+import { AdminModule } from './admin/admin.module.js';
 import { CategoriesModule } from './categories/categories.module.js';
 import { UploadsModule } from './uploads/uploads.module.js';
 
 import { AppController } from './app.controller.js';
+import { HealthController } from './health.controller.js';
 import { AppService } from './app.service.js';
+
 @Module({
   imports: [
     ConfigModule.forRoot({
@@ -21,10 +24,11 @@ import { AppService } from './app.service.js';
     AuthModule,
     BlogsModule,
     ReviewerModule,
+    AdminModule,
     CategoriesModule,
     UploadsModule,
   ],
-  controllers: [AppController],
+  controllers: [AppController, HealthController],
   providers: [AppService],
 })
 export class AppModule {}

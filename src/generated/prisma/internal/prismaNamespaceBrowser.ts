@@ -55,7 +55,8 @@ export const ModelName = {
   Blog: 'Blog',
   BlogContent: 'BlogContent',
   BlogAuditLog: 'BlogAuditLog',
-  RoleChangeLog: 'RoleChangeLog'
+  RoleChangeLog: 'RoleChangeLog',
+  Category: 'Category'
 } as const
 
 export type ModelName = (typeof ModelName)[keyof typeof ModelName]
@@ -105,6 +106,7 @@ export const BlogScalarFieldEnum = {
   status: 'status',
   latestRevisionVersion: 'latestRevisionVersion',
   latestPublishedVersion: 'latestPublishedVersion',
+  reviewNote: 'reviewNote',
   submittedAt: 'submittedAt',
   publishedAt: 'publishedAt',
   deletedAt: 'deletedAt',
@@ -148,6 +150,15 @@ export const RoleChangeLogScalarFieldEnum = {
 } as const
 
 export type RoleChangeLogScalarFieldEnum = (typeof RoleChangeLogScalarFieldEnum)[keyof typeof RoleChangeLogScalarFieldEnum]
+
+
+export const CategoryScalarFieldEnum = {
+  id: 'id',
+  name: 'name',
+  createdAt: 'createdAt'
+} as const
+
+export type CategoryScalarFieldEnum = (typeof CategoryScalarFieldEnum)[keyof typeof CategoryScalarFieldEnum]
 
 
 export const SortOrder = {

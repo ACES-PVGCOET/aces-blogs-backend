@@ -6,83 +6,128 @@ import {
   Param,
   Patch,
   Post,
-  Req,
-  UnauthorizedException,
+  Query,
   UseGuards,
 } from '@nestjs/common';
+import {
+  ApiBearerAuth,
+  ApiCookieAuth,
+  ApiOperation,
+  ApiParam,
+  ApiResponse,
+  ApiTags,
+} from '@nestjs/swagger';
 
-import { AuthGuard } from '@nestjs/passport';
-import { Request } from 'express';
-
-import { UserRole } from '../generated/prisma/client.js';
-import { Roles } from '../auth/decorators/roles.decorators.js';
-import { RolesGuard } from '../auth/guards/roles.guards.js';
+import {
+  type AuthenticatedUser,
+  CurrentUser,
+  JwtAuthGuard,
+  Roles,
+  RolesGuard,
+  UserRole,
+} from '../common/index.js';
 
 import { BlogsService } from './blogs.service.js';
 import { CreateBlogDto } from './dto/create-blog.dto.js';
 import { SaveBlogContentDto } from './dto/save-blog-draft.dto.js';
+import { BlogQueryDto } from './dto/list-my-blogs-query.dto.js';
 
-interface AuthRequest extends Request {
-  user?: {
-    id?: string;
-    sub?: string;
-  };
-}
-
+@ApiTags('Blogs (Author)')
+@ApiBearerAuth()
+@ApiCookieAuth('aces_session')
 @Controller('blogs')
-@UseGuards(AuthGuard('jwt'), RolesGuard)
+@UseGuards(JwtAuthGuard, RolesGuard)
 @Roles(UserRole.WRITER, UserRole.ADMIN)
 export class BlogsController {
   constructor(private readonly blogsService: BlogsService) {}
 
-  private userId(req: AuthRequest): string {
-    const id = req.user?.id ?? req.user?.sub;
-
-    if (!id) {
-      throw new UnauthorizedException('User ID missing from JWT');
-    }
-
-    return id;
-  }
-
   @Post()
+  @ApiOperation({
+    summary: 'Create a blog draft',
+    description: 'Initializes a new blog draft with version 1 content.',
+  })
+  @ApiResponse({ status: 201, description: 'Blog draft created' })
+  @ApiResponse({ status: 400, description: 'Validation error' })
+  @ApiResponse({ status: 403, description: 'Forbidden - requires WRITER or ADMIN' })
   create(
-    @Req() req: AuthRequest,
+    @CurrentUser() user: AuthenticatedUser,
     @Body() dto: CreateBlogDto,
   ) {
-    return this.blogsService.createBlog(this.userId(req), dto);
+    return this.blogsService.createBlog(user.id, dto);
+  }
+
+  // Placed before :id to prevent 'mine' matching as an ID parameter
+  @Get('mine')
+  @ApiOperation({
+    summary: 'List my authored blogs',
+    description: 'Returns paginated list of blogs authored by the current user.',
+  })
+  @ApiResponse({ status: 200, description: 'Author blog list retrieved' })
+  listMine(
+    @CurrentUser() user: AuthenticatedUser,
+    @Query() query: BlogQueryDto,
+  ) {
+    return this.blogsService.listMyBlogs(user.id, query);
   }
 
   @Get(':id/editable')
+  @ApiOperation({
+    summary: 'Fetch editable draft with content',
+    description: 'Returns the current working revision of the blog for editing.',
+  })
+  @ApiParam({ name: 'id', description: 'Blog UUID' })
+  @ApiResponse({ status: 200, description: 'Editable blog revision retrieved' })
+  @ApiResponse({ status: 404, description: 'Blog not found' })
   getEditable(
-    @Req() req: AuthRequest,
+    @CurrentUser() user: AuthenticatedUser,
     @Param('id') id: string,
   ) {
-    return this.blogsService.getEditableBlog(this.userId(req), id);
+    return this.blogsService.getEditableBlog(user.id, id);
   }
 
   @Patch(':id/content')
+  @ApiOperation({
+    summary: 'Save draft revision content',
+    description: 'Saves blog content with optimistic locking (expectedVersion check).',
+  })
+  @ApiParam({ name: 'id', description: 'Blog UUID' })
+  @ApiResponse({ status: 200, description: 'Draft revision saved' })
+  @ApiResponse({ status: 409, description: 'Conflict - stale expectedVersion' })
   saveContent(
-    @Req() req: AuthRequest,
+    @CurrentUser() user: AuthenticatedUser,
     @Param('id') id: string,
     @Body() dto: SaveBlogContentDto,
   ) {
-    return this.blogsService.saveContent(this.userId(req), id, dto);
+    return this.blogsService.saveContent(user.id, id, dto);
   }
 
   @Post(':id/archive')
+  @ApiOperation({
+    summary: 'Archive a blog',
+    description: 'Marks an active blog as ARCHIVED.',
+  })
+  @ApiParam({ name: 'id', description: 'Blog UUID' })
+  @ApiResponse({ status: 200, description: 'Blog archived' })
+  @ApiResponse({ status: 409, description: 'Conflict - already archived or under review' })
   archive(
-    @Req() req: AuthRequest,
+    @CurrentUser() user: AuthenticatedUser,
     @Param('id') id: string,
   ) {
-    return this.blogsService.archiveBlog(this.userId(req), id);
+    return this.blogsService.archiveBlog(user.id, id);
   }
 
   @Delete(':id')
+  @ApiOperation({
+    summary: 'Soft-delete a blog',
+    description: 'Marks a blog as DELETED and hides it from lists.',
+  })
+  @ApiParam({ name: 'id', description: 'Blog UUID' })
+  @ApiResponse({ status: 200, description: 'Blog deleted' })
+  @ApiResponse({ status: 404, description: 'Blog not found' })
   delete(
-    @Req() req: AuthRequest,
+    @CurrentUser() user: AuthenticatedUser,
     @Param('id') id: string,
   ) {
-    return this.blogsService.deleteBlog(this.userId(req), id);
+    return this.blogsService.deleteBlog(user.id, id);
   }
 }

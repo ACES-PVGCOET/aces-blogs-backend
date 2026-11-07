@@ -11,10 +11,10 @@ import {
   THUMBNAIL_MAX_LENGTH,
   TITLE_MAX_LENGTH,
   TITLE_MIN_LENGTH,
-} from '../../internal/admin.constants';
-import { IsCloudinaryUrl } from '../../internal/validation/cloudinary-url';
-import { trim } from './common';
-import { SLUG_PATTERN } from './create-admin-blog.dto';
+} from '../../internal/admin.constants.js';
+import { IsCloudinaryUrl } from '../../internal/validation/cloudinary-url.js';
+import { trim } from './common.js';
+import { SLUG_PATTERN } from './create-admin-blog.dto.js';
 
 /**
  * PATCH /admin/blogs/:id. Metadata is not versioned, so on a live blog a change shows on the public page at once.

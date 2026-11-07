@@ -5,9 +5,9 @@
  *
  * The database name must contain "test": its schema is DROPPED and re-migrated before the run.
  */
-import { BlogStatus, UserRole, UserStatus } from '@prisma/client';
-import { createTestContext, doc, EMPTY, img, type TestContext, type TestUser } from './support/admin-test-app';
-import { TEST_DATABASE_URL } from './support/database';
+import { BlogStatus, UserRole, UserStatus } from '../src/generated/prisma/client.js';
+import { createTestContext, doc, EMPTY, img, type TestContext, type TestUser } from './support/admin-test-app.js';
+import { TEST_DATABASE_URL } from './support/database.js';
 
 (TEST_DATABASE_URL ? describe : describe.skip)('admin API', () => {
   let t: TestContext;

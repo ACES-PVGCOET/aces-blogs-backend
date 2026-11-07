@@ -1,9 +1,9 @@
 import { ConflictException, ForbiddenException, Injectable, NotFoundException } from '@nestjs/common';
-import { BlogStatus, Prisma, UserRole, UserStatus } from '@prisma/client';
-import { PrismaService } from '../../prisma';
-import { ListUsersQueryDto } from '../http/dto/list-users-query.dto';
-import { PAGE_SIZE_DEFAULT } from './admin.constants';
-import { escapeLike } from './slug.util';
+import { BlogStatus, Prisma, UserRole, UserStatus } from '../../generated/prisma/client.js';
+import { PrismaService } from '../../prisma/prisma.service.js';
+import { ListUsersQueryDto } from '../http/dto/list-users-query.dto.js';
+import { PAGE_SIZE_DEFAULT } from './admin.constants.js';
+import { escapeLike } from './slug.util.js';
 
 /** Never return passwordHash or sessionVersion. */
 const USER_SELECT = {
@@ -98,7 +98,7 @@ export class AdminUsersService {
     const target = await this.getOne(targetId);
     if (target.role === role) return target;
 
-    await this.prisma.$transaction(async (tx) => {
+    await this.prisma.$transaction(async (tx: Prisma.TransactionClient) => {
       // Repeats the role we read, so two admins changing the same user cannot both succeed.
       const { count } = await tx.user.updateMany({ where: { id: targetId, role: target.role }, data: { role } });
       if (count !== 1) throw new ConflictException('The user was changed by someone else. Reload and try again.');
@@ -132,14 +132,14 @@ export class AdminUsersService {
     const counts = await this.prisma.blog.groupBy({
       by: ['reviewerId', 'status'],
       where: {
-        reviewerId: { in: reviewers.map((r) => r.id) },
+        reviewerId: { in: reviewers.map((r: { id: string }) => r.id) },
         status: { in: [BlogStatus.UNDER_REVIEW, BlogStatus.PUBLISHED] },
       },
       _count: { _all: true },
     });
-    return reviewers.map((reviewer) => {
+    return reviewers.map((reviewer: { id: string; [key: string]: unknown }) => {
       const countOf = (status: BlogStatus) =>
-        counts.find((c) => c.reviewerId === reviewer.id && c.status === status)?._count._all ?? 0;
+        counts.find((c: { reviewerId: string | null; status: BlogStatus; _count: { _all: number } }) => c.reviewerId === reviewer.id && c.status === status)?._count._all ?? 0;
       return {
         ...reviewer,
         workload: { underReview: countOf(BlogStatus.UNDER_REVIEW), published: countOf(BlogStatus.PUBLISHED) },

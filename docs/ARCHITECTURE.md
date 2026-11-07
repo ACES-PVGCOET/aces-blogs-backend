@@ -1,54 +1,101 @@
-# Architecture
+# System Architecture & Technical Specifications
 
-## Layers
-`src/<module>/` follows the same shape everywhere:
+This document defines the structural architecture, layer boundaries, and design decisions governing the `aces-blogs-backend` system.
+
+---
+
+## 1. Module Topography
+
+The system is decomposed into cohesive domain modules mounted under `AppModule`:
+
 ```
-index.ts      public contract: the ONLY file other modules may import from
-internal/     private logic: entities, services, rules
-http/         controllers and DTOs
-```
-Never import from another module's `internal/` or `http/` folders.
-
-## Shared code (`src/common/`)
-`UserRole`, `UserStatus`, `@Roles(...)`, `RolesGuard`, `JwtAuthGuard`, `@CurrentUser()`, `AuthenticatedUser`. Everyone uses these; changes need a separate PR.
-
-Protect a route:
-```ts
-@UseGuards(JwtAuthGuard, RolesGuard)
-@Roles(UserRole.WRITER)
-```
-`@Roles` matches exact roles (an ADMIN is not automatically allowed where only WRITER is listed).
-
-## Contracts between modules
-| Topic | Rule |
-|---|---|
-| IDs | uuid everywhere |
-| Logged-in user | After `JwtAuthGuard`, `request.user` has `id` (uuid) and `role`. Read it with `@CurrentUser()` |
-| Roles | `READER`, `WRITER` (the author role), `REVIEWER`, `ADMIN` |
-| JWT strategy | Implemented by user-mgmt (`src/auth`). It must re-check the user in the database on every request, so a BLOCKED or DELETED account loses access immediately |
-| Categories | blog-post calls `CategoriesService.findOrCreate(name)` when a blog is published. Categories are created only that way. Signature is in `src/categories/categories.service.ts` |
-| Blog author id | blog-post stores the user's `id` (uuid) as plain column, no foreign key into users, so modules stay independent |
-| Uploads | blog-uploads returns the final https URL of the stored asset; blog-post stores that URL |
-
-## Decision log
-| Decision | Choice | Notes |
-|---|---|---|
-| Author role name | `WRITER` | Matches the spec |
-| Blog status model | Split: `blog.status` = lifecycle (ACTIVE / ARCHIVED / DELETED), `revision.status` = workflow (DRAFT / UNDER_REVIEW / PUBLISHED / REJECT) | Owner: blog-post |
-| Database schema | Prisma: `prisma migrate dev` locally; production uses `prisma migrate deploy` | |
-
-Add a row here when the team agrees something new.
-
-## Testing before user-mgmt is merged
-Routes protected by `JwtAuthGuard` can't log anyone in until the user-mgmt branch is merged. In your tests, replace the guard:
-```ts
-Test.createTestingModule({ imports: [...] })
-  .overrideGuard(JwtAuthGuard)
-  .useValue({ canActivate: (ctx) => { ctx.switchToHttp().getRequest().user = { id: '...uuid...', role: 'WRITER' }; return true; } })
+src/
+├── admin/          # Admin user & blog operations, role auditing
+├── auth/           # Authentication, credentials validation, session issuance
+├── blogs/          # Author and public blog management, content storage
+├── categories/     # Category catalog management and relation integrity
+├── common/         # Cross-cutting guards, decorators, types, and filters
+├── prisma/         # Global PrismaService instance and database adapter
+├── reviewer/       # Review queue, diff comparison, and approval workflow
+├── uploads/        # Cloudinary multipart file integration
+└── users/          # User identities, profile management, and session invalidation
 ```
 
-## Suggested merge order
-1. This base skeleton (`main`)
-2. user-mgmt-api (others can then test with real logins)
-3. blog-cat-api and blog-uploads-api
-4. blog-post-api (it needs `CategoriesService` and the uploads URL format)
+### Module Boundary Rules
+1. **Public Contracts Only**: External modules must only import from a module's root `index.ts`. Never deep-import into another module's internal directories.
+2. **Global Prisma Module**: `PrismaService` is injected globally across modules to handle relational persistence and connection pooling.
+3. **Explicit ESM Extensions**: All relative imports must retain explicit `.js` extensions (`import ... from './file.js'`) in accordance with NodeNext ECMAScript module resolution.
+
+---
+
+## 2. Authentication & Session Lifecycles
+
+### Token & Cookie Architecture
+- **Password Security**: Passwords are saved hashed via `argon2`.
+- **Session Issuance**: `AuthService.login()` issues a signed JWT containing `{ sub: user.id, sv: user.sessionVersion }`.
+- **Extraction Strategy**: `JwtStrategy` inspects the HttpOnly cookie `aces_session` as well as the standard `Authorization: Bearer <token>` header.
+- **Immediate Invalidation**: The JWT strategy validates `user.sessionVersion === payload.sv` and `user.status === 'ACTIVE'` on every authenticated request. Calling `POST /api/v1/auth/logout-all` increments `sessionVersion` in the database, instantly invalidating active sessions across all devices.
+
+---
+
+## 3. Blog Storage & Versioning Architecture
+
+Blog data is partitioned into two distinct database entities to guarantee performance and optimistic concurrency:
+
+### 1. `Blog` (Metadata Entity)
+- Primary Key: `id UUID`
+- Tracks title, unique URL `slug`, `excerpt`, `thumbnailUrl`, `category`, `tags`, and foreign relations (`authorId`, `reviewerId`).
+- Lifecycle status:
+  - `DRAFT`: Author working draft.
+  - `UNDER_REVIEW`: Submitted to reviewer queue.
+  - `REVISION_DRAFT`: Post-rejection revision or revision of an already published blog.
+  - `PUBLISHED`: Approved and publicly visible.
+  - `ARCHIVED`: Taken down but preserved.
+  - `DELETED`: Soft-deleted (hidden from standard queries).
+- Tracks `latestRevisionVersion: Int` and `latestPublishedVersion: Int?`.
+
+### 2. `BlogContent` (Versioned Content Warehouse)
+- Primary Key: `id UUID`, Unique: `[blogId, version]`
+- Stored as native PostgreSQL `JsonB` containing a TipTap document structure:
+  ```json
+  {
+    "type": "doc",
+    "content": [
+      {
+        "type": "paragraph",
+        "content": [{ "type": "text", "text": "Article content..." }]
+      }
+    ]
+  }
+  ```
+- Maintains full historical revisions without overwriting published content.
+
+### Optimistic Concurrency Control
+Whenever an author or admin updates blog content:
+1. The request payload must supply `expectedVersion`.
+2. The transaction checks that `blog.latestRevisionVersion === expectedVersion`.
+3. If versions mismatch, the request is refused with `409 Conflict`.
+4. If versions match, the revision is incremented in place or stored as a new version.
+
+---
+
+## 4. Role-Based Access Control (RBAC)
+
+Every guarded endpoint applies `@UseGuards(JwtAuthGuard, RolesGuard)` and declares acceptable roles via `@Roles(...)`:
+
+| Role | Permissions |
+| :--- | :--- |
+| **`READER`** | Read public published blogs (`GET /blogs/public`, `GET /blogs/public/:slug`), manage personal profile (`GET /users/me`, `PATCH /users/me`). |
+| **`WRITER`** | Create blog drafts (`POST /blogs`), save content (`PATCH /blogs/:id/content`), list authored blogs (`GET /blogs/mine`), archive/delete own drafts, upload images. |
+| **`REVIEWER`** | Access review queue (`GET /reviewer/blogs-to-review`), compare draft diffs against live published versions (`GET /reviewer/blogs/:id/comparison`), approve and publish (`POST /reviewer/blogs/:id/publish`), reject revisions with notes (`POST /reviewer/blogs/:id/reject-revision`). |
+| **`ADMIN`** | Complete access: mutate user roles & statuses, list all blogs across every status, publish directly without review, soft-delete & restore, manage categories. |
+
+---
+
+## 5. Global Exception Handling
+
+Database errors are intercepted globally by `PrismaExceptionFilter` in `src/common/prisma-exception.filter.ts`:
+- **`P2002` (Unique Constraint Violation)** ➔ `409 Conflict` (specifying violated fields, e.g. duplicate slug or email).
+- **`P2025` (Record Not Found)** ➔ `404 Not Found`.
+- **`P2003` (Foreign Key Constraint Failed)** ➔ `400 Bad Request`.
+- **`P2014` (Relation Constraint Failed)** ➔ `400 Bad Request`.

@@ -19,6 +19,8 @@ import { CreateBlogDto } from './dto/create-blog.dto.js';
 import { SaveBlogContentDto } from './dto/save-blog-draft.dto.js';
 import { ReviewActionDto } from './dto/review-decision.dto.js';
 import { validateTiptapDocument } from './validation/tiptap-document.js';
+import { BlogQueryDto } from './dto/list-my-blogs-query.dto.js';
+
 
 const REVIEW_QUEUE_STATUSES: BlogStatus[] = [
   BlogStatus.DRAFT,
@@ -368,6 +370,104 @@ export class BlogsService {
 
       return { id: blogId, status: BlogStatus.DELETED };
     });
+  }
+
+
+  async listMyBlogs(userId: string, query: BlogQueryDto) {
+    await this.requireUser(userId, [UserRole.WRITER, UserRole.ADMIN]);
+
+    const page = query.page ?? 1;
+    const limit = query.limit ?? 10;
+    const where: Prisma.BlogWhereInput = {
+      authorId: userId,
+      deletedAt: null,
+      ...(query.category ? { category: { equals: query.category, mode: 'insensitive' } } : {}),
+      ...(query.tag ? { tags: { has: query.tag } } : {}),
+      ...(query.search
+        ? {
+            OR: [
+              { title: { contains: query.search.trim(), mode: 'insensitive' } },
+              { slug: { contains: query.search.trim(), mode: 'insensitive' } },
+            ],
+          }
+        : {}),
+    };
+
+    const [items, total] = await Promise.all([
+      this.prisma.blog.findMany({
+        where,
+        orderBy: { modifiedAt: 'desc' },
+        skip: (page - 1) * limit,
+        take: limit,
+      }),
+      this.prisma.blog.count({ where }),
+    ]);
+
+    return {
+      items,
+      total,
+      page,
+      limit,
+      totalPages: Math.ceil(total / limit),
+    };
+  }
+
+  async listPublishedBlogs(query: BlogQueryDto) {
+    const page = query.page ?? 1;
+    const limit = query.limit ?? 10;
+    const where: Prisma.BlogWhereInput = {
+      status: {
+        notIn: [BlogStatus.ARCHIVED, BlogStatus.DELETED, BlogStatus.DRAFT],
+      },
+      latestPublishedVersion: { not: null },
+      deletedAt: null,
+      ...(query.category ? { category: { equals: query.category, mode: 'insensitive' } } : {}),
+      ...(query.tag ? { tags: { has: query.tag } } : {}),
+      ...(query.search
+        ? {
+            OR: [
+              { title: { contains: query.search.trim(), mode: 'insensitive' } },
+              { excerpt: { contains: query.search.trim(), mode: 'insensitive' } },
+            ],
+          }
+        : {}),
+    };
+
+    const [items, total] = await Promise.all([
+      this.prisma.blog.findMany({
+        where,
+        select: {
+          id: true,
+          title: true,
+          slug: true,
+          excerpt: true,
+          thumbnailUrl: true,
+          category: true,
+          tags: true,
+          publishedAt: true,
+          latestPublishedVersion: true,
+          author: {
+            select: {
+              id: true,
+              name: true,
+              profileImg: true,
+            },
+          },
+        },
+        orderBy: { publishedAt: 'desc' },
+        skip: (page - 1) * limit,
+        take: limit,
+      }),
+      this.prisma.blog.count({ where }),
+    ]);
+
+    return {
+      items,
+      total,
+      page,
+      limit,
+      totalPages: Math.ceil(total / limit),
+    };
   }
 
   async getPublishedBySlug(slug: string) {

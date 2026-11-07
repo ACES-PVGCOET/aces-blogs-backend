@@ -1,6 +1,6 @@
 import { ExecutionContext, UnauthorizedException } from '@nestjs/common';
 import * as jwt from 'jsonwebtoken';
-import { AuthenticatedUser, UserRole } from '../src/common';
+import { AuthenticatedUser } from '../src/common/index.js';
 
 const JWT_SECRET = process.env.JWT_SECRET || 'ci-only-secret-not-used-anywhere-else';
 

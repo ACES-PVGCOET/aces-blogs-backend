@@ -1,50 +1,85 @@
-# Contributing
+# Contributing Guidelines
 
-The goal: everyone works on their own module in parallel, and branches merge without conflicts.
+This guide covers engineering standards, git conventions, and verification steps for contributing to `aces-blogs-backend`.
 
-## The one rule
-**Only edit files inside your own module folder** (plus your `docs/api/<module>.md` and your own `test/<module>.e2e-spec.ts`).
-`app.module.ts` already imports all four modules, so you never need to touch it.
+---
 
-Need a change in shared code (`src/common/`, `app.module.ts`, `main.ts`, config files)? Don't edit it on your feature branch. Open a small separate PR named `chore: ...`, get it merged to `main`, then merge `main` into your branch.
+## 1. Development Workflow
 
-## Branches and commits
-- Branch from `main`: `feat/user-mgmt-api`, `feat/blog-post-api`, `feat/blog-cat-api`, `feat/blog-uploads-api`. Smaller pieces: `feat/blog-post-api-submit`, `fix/...`, `docs/...`.
-- Commit messages: `feat: ...`, `fix: ...`, `docs: ...`, `test: ...`, `chore: ...` (add the module if you like: `feat(blog): ...`).
+1. **Clone and Install**:
+   ```bash
+   git clone https://github.com/<org>/aces-blogs-backend.git
+   cd aces-blogs-backend
+   npm install
+   ```
 
-## Your workflow (PowerShell)
-```powershell
-git clone https://github.com/<org>/<repo>.git
-cd <repo>
-npm install
-copy .env.example .env              # fill in your own DB password and secrets
-git checkout -b feat/blog-post-api
+2. **Configure Environment**:
+   ```bash
+   cp .env.example .env
+   # Populate DATABASE_URL, JWT_SECRET, and Cloudinary keys
+   ```
 
-# ...work inside your module folder...
-git add .
-git commit -m "feat: create blog and save content"
-git push -u origin feat/blog-post-api      # then open a Pull Request into main on GitHub
+3. **Database Initialization**:
+   ```bash
+   npx prisma validate
+   npx prisma generate
+   npx prisma migrate deploy
+   npm run seed
+   ```
+
+4. **Branch Naming**:
+   - `feat/<feature-name>`: New functionality
+   - `fix/<bug-name>`: Bug fixes
+   - `docs/<doc-name>`: Documentation updates
+   - `chore/<task>`: Dependency or build updates
+
+---
+
+## 2. Coding Standards
+
+- **NodeNext ESM Rules**: Always include explicit `.js` extensions on relative imports:
+  ```ts
+  // Correct
+  import { BlogsService } from './blogs.service.js';
+  import { JwtAuthGuard } from '../common/index.js';
+
+  // Incorrect
+  import { BlogsService } from './blogs.service';
+  ```
+- **Module Encapsulation**: Only import from the public contract `src/<module>/index.ts`. Never deep-import into another module's `internal/` or `http/` directories.
+- **DTO Validation**: Every incoming request payload must be strictly typed and validated using `class-validator` and `class-transformer` decorators.
+- **Swagger Documentation**: Annotate all new controllers and endpoints with `@ApiTags()`, `@ApiOperation()`, and `@ApiResponse()`.
+
+---
+
+## 3. Verification Checklist
+
+Before submitting a Pull Request, all automated quality gates must pass:
+
+```bash
+# 1. Prisma schema check
+npx prisma validate
+
+# 2. Code linting (zero warnings / errors)
+npm run lint
+
+# 3. TypeScript compilation check
+npx tsc --noEmit
+
+# 4. Production build
+npm run build
+
+# 5. Unit test suite
+npm run test
+
+# 6. E2E test suite (requires test database)
+npm run test:e2e
 ```
 
-Keep up with `main` often, so merges stay small:
-```powershell
-git checkout main
-git pull
-git checkout feat/blog-post-api
-git merge main
-```
+---
 
-## Adding a package
-Install it on your branch (`npm install <package>`) and commit `package.json` and `package-lock.json`.
-If `package-lock.json` conflicts when merging: `git checkout main -- package-lock.json`, then `npm install` to regenerate it.
+## 4. Pull Request Requirements
 
-## Pull requests
-- CI must be green (build + tests). Add tests for what you built in `test/<module>.e2e-spec.ts`.
-- At least 1 teammate reviews. Squash-merge, then delete the branch.
-- Fill in the checklist in the PR template.
-
-## Never commit
-`.env`, `node_modules/`, `dist/`, passwords, API keys, tokens. If a secret gets pushed by accident, tell the team: it must be rotated, deleting the commit isn't enough.
-
-## Testing against the database
-Tests use their own database whose name contains `test`. Never point tests at your dev database.
+- Describe the problem solved and reference related issues.
+- Confirm all tests pass.
+- Do not commit `.env`, `node_modules/`, `dist/`, or temporary files.
