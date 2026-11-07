@@ -41,7 +41,7 @@ No un-archive, no un-delete.
 | Status | Result |
 |---|---|
 | `DRAFT`, `REVISION_DRAFT` | overwrite the current version in place (autosave-safe, no version spam) |
-| `PUBLISHED` | new version (+1), status becomes `REVISION_DRAFT`; the live version stays live |
+| `PUBLISHED` | new version (+1), status becomes `REVISION_DRAFTMerged`; the live version stays live |
 | `UNDER_REVIEW`, `ARCHIVED`, `DELETED` (and `REJECT`) | 409 |
 
 A version the public can see is never overwritten: if `latestPublishedVersion >= latestRevisionVersion` the save starts a new version.
