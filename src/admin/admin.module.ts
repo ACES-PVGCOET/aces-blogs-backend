@@ -1,8 +1,9 @@
 import { Module } from '@nestjs/common';
-import { AdminBlogsController } from './http/admin-blogs.controller';
-import { AdminUsersController } from './http/admin-users.controller';
-import { AdminBlogsService } from './internal/admin-blogs.service';
-import { AdminUsersService } from './internal/admin-users.service';
+import { AdminBlogsController } from './http/admin-blogs.controller.js';
+import { AdminUsersController } from './http/admin-users.controller.js';
+import { AdminBlogsService } from './internal/admin-blogs.service.js';
+import { AdminUsersService } from './internal/admin-users.service.js';
+import { AdminSeedService } from './internal/admin-seed.service.js';
 
 /**
  * admin-api (branch: feat/admin-module)
@@ -11,6 +12,7 @@ import { AdminUsersService } from './internal/admin-users.service';
  */
 @Module({
   controllers: [AdminUsersController, AdminBlogsController],
-  providers: [AdminUsersService, AdminBlogsService],
+  providers: [AdminUsersService, AdminBlogsService, AdminSeedService],
+  exports: [AdminUsersService, AdminBlogsService, AdminSeedService],
 })
 export class AdminModule {}

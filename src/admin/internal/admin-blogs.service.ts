@@ -1,13 +1,13 @@
 import { BadRequestException, ConflictException, Injectable, NotFoundException } from '@nestjs/common';
-import { Blog, BlogStatus, Prisma } from '@prisma/client';
-import { PrismaService } from '../../prisma';
-import { CreateAdminBlogDto } from '../http/dto/create-admin-blog.dto';
-import { ListAdminBlogsQueryDto } from '../http/dto/list-admin-blogs-query.dto';
-import { UpdateAdminBlogContentDto } from '../http/dto/update-admin-blog-content.dto';
-import { UpdateAdminBlogMetaDto } from '../http/dto/update-admin-blog-meta.dto';
-import { PAGE_SIZE_DEFAULT } from './admin.constants';
-import { cleanLabel, escapeLike, normalizeTags, slugCandidate } from './slug.util';
-import { hasContent, parseTiptapContent } from './validation/tiptap-content';
+import { Blog, BlogStatus, Prisma } from '../../generated/prisma/client.js';
+import { PrismaService } from '../../prisma/prisma.service.js';
+import { CreateAdminBlogDto } from '../http/dto/create-admin-blog.dto.js';
+import { ListAdminBlogsQueryDto } from '../http/dto/list-admin-blogs-query.dto.js';
+import { UpdateAdminBlogContentDto } from '../http/dto/update-admin-blog-content.dto.js';
+import { UpdateAdminBlogMetaDto } from '../http/dto/update-admin-blog-meta.dto.js';
+import { PAGE_SIZE_DEFAULT } from './admin.constants.js';
+import { cleanLabel, escapeLike, normalizeTags, slugCandidate } from './slug.util.js';
+import { hasContent, parseTiptapContent } from './validation/tiptap-content.js';
 
 type Tx = Prisma.TransactionClient;
 
@@ -72,7 +72,7 @@ export class AdminBlogsService {
     for (let attempt = 0; attempt < attempts; attempt++) {
       const slug = dto.slug ?? slugCandidate(dto.title, attempt);
       try {
-        return await this.prisma.$transaction(async (tx) => {
+        return await this.prisma.$transaction(async (tx: Tx) => {
           const blog = await tx.blog.create({
             data: {
               slug,
@@ -113,7 +113,7 @@ export class AdminBlogsService {
     if (Object.keys(data).length === 0) throw new BadRequestException('Nothing to update.');
 
     try {
-      await this.prisma.$transaction(async (tx) => {
+      await this.prisma.$transaction(async (tx: Tx) => {
         const { count } = await tx.blog.updateMany({
           where: { id, deletedAt: null, status: { not: BlogStatus.DELETED } },
           data: { ...data, modifiedAt: new Date() },
@@ -138,7 +138,7 @@ export class AdminBlogsService {
   async updateContent(adminId: string, id: string, dto: UpdateAdminBlogContentDto) {
     const content = parseTiptapContent(dto.content) as unknown as Prisma.InputJsonValue;
 
-    return this.prisma.$transaction(async (tx) => {
+    return this.prisma.$transaction(async (tx: Tx) => {
       const blog = await this.findOrFail(tx, id);
       if (blog.status === BlogStatus.UNDER_REVIEW) {
         throw new ConflictException('Blog is under review. The reviewer has to decide first.');
@@ -194,7 +194,7 @@ export class AdminBlogsService {
 
   /** Publishes the latest revision. TODO: call CategoriesService.findOrCreate(category) once blog-cat-api is merged. */
   async publish(adminId: string, id: string) {
-    return this.prisma.$transaction(async (tx) => {
+    return this.prisma.$transaction(async (tx: Tx) => {
       const blog = await this.findOrFail(tx, id);
       if (blog.status === BlogStatus.PUBLISHED) throw new ConflictException('Blog is already published.');
       if (blog.status === BlogStatus.UNDER_REVIEW) throw new ConflictException('Blog is under review.');
@@ -221,7 +221,7 @@ export class AdminBlogsService {
   }
 
   async softDelete(adminId: string, id: string) {
-    await this.prisma.$transaction(async (tx) => {
+    await this.prisma.$transaction(async (tx: Tx) => {
       const { count } = await tx.blog.updateMany({
         where: { id, deletedAt: null, status: { not: BlogStatus.DELETED } },
         data: { status: BlogStatus.DELETED, deletedAt: new Date(), modifiedAt: new Date() },
@@ -234,7 +234,7 @@ export class AdminBlogsService {
 
   /** A restored blog is never live by itself: DRAFT if it was never published, otherwise ARCHIVED (publish it again if wanted). */
   async restore(adminId: string, id: string) {
-    return this.prisma.$transaction(async (tx) => {
+    return this.prisma.$transaction(async (tx: Tx) => {
       const blog = await tx.blog.findUnique({ where: { id } });
       if (!blog) throw new NotFoundException('Blog not found');
       if (blog.status !== BlogStatus.DELETED) throw new ConflictException('Blog is not deleted.');

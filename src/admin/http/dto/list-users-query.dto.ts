@@ -1,8 +1,8 @@
 import { Transform, Type } from 'class-transformer';
 import { IsEnum, IsInt, IsOptional, IsString, Max, MaxLength, Min } from 'class-validator';
-import { UserRole, UserStatus } from '@prisma/client';
-import { PAGE_SIZE_MAX } from '../../internal/admin.constants';
-import { trim } from './common';
+import { UserRole, UserStatus } from '../../../generated/prisma/client.js';
+import { PAGE_SIZE_MAX } from '../../internal/admin.constants.js';
+import { trim } from './common.js';
 
 export class ListUsersQueryDto {
   @IsOptional() @IsEnum(UserRole) role?: UserRole;

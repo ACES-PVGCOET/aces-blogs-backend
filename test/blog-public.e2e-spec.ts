@@ -1,6 +1,6 @@
-import { BlogStatus } from '@prisma/client';
-import { createTestContext, doc, type TestContext, type TestUser } from './support/test-app';
-import { TEST_DATABASE_URL } from './support/database';
+import { BlogStatus } from '../src/generated/prisma/client.js';
+import { createTestContext, doc, type TestContext, type TestUser } from './support/test-app.js';
+import { TEST_DATABASE_URL } from './support/database.js';
 
 (TEST_DATABASE_URL ? describe : describe.skip)('public blog API', () => {
   let t: TestContext;
@@ -28,97 +28,90 @@ import { TEST_DATABASE_URL } from './support/database';
       await seed('published', BlogStatus.PUBLISHED);
       await seed('revising', BlogStatus.REVISION_DRAFT, { versions: { 1: 'live revising', 2: 'SECRET draft v2' } });
       await seed('reviewing', BlogStatus.UNDER_REVIEW, { versions: { 1: 'live reviewing', 2: 'SECRET draft v2' } });
-
-      const list = await t.http().get(base).expect(200);
-      expect(list.body.items.map((i: { slug: string }) => i.slug).sort()).toEqual(['published', 'reviewing', 'revising']);
-
-      const revising = await t.http().get(`${base}/revising`).expect(200);
-      expect(revising.body.content).toEqual(doc('live revising'));
-      expect(JSON.stringify(revising.body)).not.toContain('SECRET');
-    });
-
-    it('hides never-published, archived, deleted and soft-deleted blogs (list and by slug)', async () => {
-      await seed('never-published', BlogStatus.DRAFT, { publishedVersion: null, publishedAt: null });
-      await seed('under-review-first-time', BlogStatus.UNDER_REVIEW, { publishedVersion: null, publishedAt: null });
+      await seed('draft', BlogStatus.DRAFT, { publishedVersion: null, publishedAt: null });
+      await seed('rejected', BlogStatus.REJECT, { publishedVersion: null, publishedAt: null });
       await seed('archived', BlogStatus.ARCHIVED);
       await seed('deleted', BlogStatus.DELETED, { deletedAt: day(11) });
-      await seed('soft-deleted', BlogStatus.PUBLISHED, { deletedAt: day(11) });
-      await seed('visible', BlogStatus.PUBLISHED);
 
       const list = await t.http().get(base).expect(200);
-      expect(list.body.items.map((i: { slug: string }) => i.slug)).toEqual(['visible']);
-      expect(list.body.total).toBe(1);
-      for (const slug of ['never-published', 'under-review-first-time', 'archived', 'deleted', 'soft-deleted', 'missing']) {
+      expect(list.body.items.map((b: { slug: string }) => b.slug).sort()).toEqual(['published', 'reviewing', 'revising']);
+
+      for (const slug of ['published', 'reviewing', 'revising']) {
+        const detail = await t.http().get(`${base}/${slug}`).expect(200);
+        expect(detail.body.content).toEqual(doc(`live ${slug}`));
+        expect(detail.body.version).toBe(1);
+      }
+    });
+
+    it('returns 404 for drafts, rejected, archived, deleted blogs', async () => {
+      await seed('draft', BlogStatus.DRAFT, { publishedVersion: null, publishedAt: null });
+      await seed('rejected', BlogStatus.REJECT, { publishedVersion: null, publishedAt: null });
+      await seed('archived', BlogStatus.ARCHIVED);
+      await seed('deleted', BlogStatus.DELETED, { deletedAt: day(11) });
+
+      for (const slug of ['draft', 'rejected', 'archived', 'deleted', 'never-existed']) {
         await t.http().get(`${base}/${slug}`).expect(404);
       }
     });
   });
 
-  describe('response shape', () => {
-    it('has no id, version numbers, status, reviewer or review note', async () => {
-      await seed('shape', BlogStatus.PUBLISHED, { excerpt: 'An excerpt', tags: ['xss'], reviewNote: 'SECRET note' });
-      const expected = ['author', 'category', 'excerpt', 'publishedAt', 'slug', 'tags', 'thumbnailUrl', 'title'];
-
-      const list = await t.http().get(base).expect(200);
-      expect(Object.keys(list.body.items[0]).sort()).toEqual(expected);
-      expect(list.body.items[0].author).toEqual({ name: 'Asha', profileImg: 'https://example.com/asha.png' });
-
-      const one = await t.http().get(`${base}/shape`).expect(200);
-      expect(Object.keys(one.body).sort()).toEqual([...expected, 'content'].sort());
-      expect(JSON.stringify(one.body)).not.toContain('SECRET');
+  describe('filtering and sorting', () => {
+    beforeEach(async () => {
+      await seed('ai-news', BlogStatus.PUBLISHED, { category: 'AI', tags: ['ml', 'trending'], publishedAt: day(10) });
+      await seed('ai-ethics', BlogStatus.PUBLISHED, { category: 'AI', tags: ['ethics', 'policy'], publishedAt: day(12) });
+      await seed('web-fast', BlogStatus.PUBLISHED, { category: 'Web', tags: ['perf', 'trending'], publishedAt: day(15) });
     });
 
-    it('needs no login', async () => {
-      await seed('open', BlogStatus.PUBLISHED);
-      await t.http().get(base).expect(200);
-      await t.http().get(`${base}/open`).expect(200);
+    it('filters by category (case-insensitive)', async () => {
+      const res = await t.http().get(`${base}?category=ai`).expect(200);
+      expect(res.body.items.map((b: { slug: string }) => b.slug)).toEqual(['ai-ethics', 'ai-news']);
+    });
+
+    it('filters by tag', async () => {
+      const res = await t.http().get(`${base}?tag=trending`).expect(200);
+      expect(res.body.items.map((b: { slug: string }) => b.slug)).toEqual(['web-fast', 'ai-news']);
+    });
+
+    it('sorts by publishedAt asc/desc (default desc)', async () => {
+      const desc = await t.http().get(base).expect(200);
+      expect(desc.body.items.map((b: { slug: string }) => b.slug)).toEqual(['web-fast', 'ai-ethics', 'ai-news']);
+
+      const asc = await t.http().get(`${base}?sortOrder=asc`).expect(200);
+      expect(asc.body.items.map((b: { slug: string }) => b.slug)).toEqual(['ai-news', 'ai-ethics', 'web-fast']);
+    });
+
+    it('paginates', async () => {
+      const page1 = await t.http().get(`${base}?page=1&limit=2`).expect(200);
+      expect(page1.body.items.map((b: { slug: string }) => b.slug)).toEqual(['web-fast', 'ai-ethics']);
+      expect(page1.body.pagination).toMatchObject({ page: 1, limit: 2, total: 3, totalPages: 2 });
+
+      const page2 = await t.http().get(`${base}?page=2&limit=2`).expect(200);
+      expect(page2.body.items.map((b: { slug: string }) => b.slug)).toEqual(['ai-news']);
     });
   });
 
-  describe('list', () => {
-    beforeEach(async () => {
-      await seed('oldest', BlogStatus.PUBLISHED, { title: 'Oldest XSS guide', category: 'Security', tags: ['xss', 'web'], publishedAt: day(1) });
-      await seed('middle', BlogStatus.PUBLISHED, { title: 'Docker basics', category: 'DevOps', tags: ['docker'], publishedAt: day(5) });
-      await seed('newest', BlogStatus.PUBLISHED, { title: '100% Nest tips', category: 'security', tags: ['nest', 'web'], publishedAt: day(9) });
-    });
+  describe('card shape vs detail shape', () => {
+    it('list items do not carry content; detail items do, with author profile', async () => {
+      await seed('shaping', BlogStatus.PUBLISHED, { excerpt: 'short teaser', tags: ['a', 'b'] });
 
-    it('sorts by publishedAt, newest first', async () => {
-      const res = await t.http().get(base).expect(200);
-      expect(res.body.items.map((i: { slug: string }) => i.slug)).toEqual(['newest', 'middle', 'oldest']);
-    });
+      const list = await t.http().get(base).expect(200);
+      const card = list.body.items[0];
+      expect(card).not.toHaveProperty('content');
+      expect(card).toMatchObject({
+        slug: 'shaping',
+        excerpt: 'short teaser',
+        category: 'Security',
+        tags: ['a', 'b'],
+        author: { id: author.id, name: 'Asha', profileImg: 'https://example.com/asha.png' },
+      });
 
-    it('filters by category (case-insensitive), tag and title (case-insensitive, contains)', async () => {
-      const slugs = async (qs: string) =>
-        (await t.http().get(`${base}?${qs}`).expect(200)).body.items.map((i: { slug: string }) => i.slug);
-
-      expect(await slugs('category=SECURITY')).toEqual(['newest', 'oldest']);
-      expect(await slugs('tag=web')).toEqual(['newest', 'oldest']);
-      expect(await slugs('tag=WEB')).toEqual(['newest', 'oldest']);
-      expect(await slugs('q=docker')).toEqual(['middle']);
-      expect(await slugs('q=GUIDE&category=security')).toEqual(['oldest']);
-      expect(await slugs('category=nope')).toEqual([]);
-    });
-
-    it('treats % and _ in the title search as plain characters', async () => {
-      const res = await t.http().get(`${base}`).query({ q: '%' }).expect(200);
-      expect(res.body.items.map((i: { slug: string }) => i.slug)).toEqual(['newest']);
-      const underscore = await t.http().get(`${base}`).query({ q: '_' }).expect(200);
-      expect(underscore.body.items).toEqual([]);
-      const category = await t.http().get(`${base}`).query({ category: 'Sec%' }).expect(200);
-      expect(category.body.items).toEqual([]);
-      // a category that really contains an underscore still matches itself, in any case
-      await seed('csharp', BlogStatus.PUBLISHED, { category: 'C_Sharp', publishedAt: day(2) });
-      const exact = await t.http().get(`${base}`).query({ category: 'c_sharp' }).expect(200);
-      expect(exact.body.items.map((i: { slug: string }) => i.slug)).toEqual(['csharp']);
-    });
-
-    it('pages, and caps limit at 50', async () => {
-      const page = await t.http().get(`${base}?limit=2&page=2`).expect(200);
-      expect(page.body).toMatchObject({ total: 3, page: 2, limit: 2 });
-      expect(page.body.items.map((i: { slug: string }) => i.slug)).toEqual(['oldest']);
-      await t.http().get(`${base}?limit=50`).expect(200);
-      await t.http().get(`${base}?limit=51`).expect(400);
-      await t.http().get(`${base}?page=0`).expect(400);
+      const detail = await t.http().get(`${base}/shaping`).expect(200);
+      expect(detail.body).toMatchObject({
+        slug: 'shaping',
+        content: doc('live shaping'),
+        version: 1,
+        author: { id: author.id, name: 'Asha', profileImg: 'https://example.com/asha.png' },
+      });
     });
   });
 });

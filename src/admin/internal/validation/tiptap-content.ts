@@ -1,6 +1,6 @@
 import { BadRequestException } from '@nestjs/common';
-import { CLOUDINARY_URL_MESSAGE, isCloudinaryUrl } from './cloudinary-url';
-import { validateTiptapDocument } from './tiptap-document';
+import { CLOUDINARY_URL_MESSAGE, isCloudinaryUrl } from './cloudinary-url.js';
+import { validateTiptapDocument } from './tiptap-document.js';
 
 export interface TipTapNode {
   type: string;

@@ -48,6 +48,7 @@ export type BlogMinAggregateOutputType = {
   status: $Enums.BlogStatus | null
   latestRevisionVersion: number | null
   latestPublishedVersion: number | null
+  reviewNote: string | null
   submittedAt: Date | null
   publishedAt: Date | null
   deletedAt: Date | null
@@ -67,6 +68,7 @@ export type BlogMaxAggregateOutputType = {
   status: $Enums.BlogStatus | null
   latestRevisionVersion: number | null
   latestPublishedVersion: number | null
+  reviewNote: string | null
   submittedAt: Date | null
   publishedAt: Date | null
   deletedAt: Date | null
@@ -87,6 +89,7 @@ export type BlogCountAggregateOutputType = {
   status: number
   latestRevisionVersion: number
   latestPublishedVersion: number
+  reviewNote: number
   submittedAt: number
   publishedAt: number
   deletedAt: number
@@ -118,6 +121,7 @@ export type BlogMinAggregateInputType = {
   status?: true
   latestRevisionVersion?: true
   latestPublishedVersion?: true
+  reviewNote?: true
   submittedAt?: true
   publishedAt?: true
   deletedAt?: true
@@ -137,6 +141,7 @@ export type BlogMaxAggregateInputType = {
   status?: true
   latestRevisionVersion?: true
   latestPublishedVersion?: true
+  reviewNote?: true
   submittedAt?: true
   publishedAt?: true
   deletedAt?: true
@@ -157,6 +162,7 @@ export type BlogCountAggregateInputType = {
   status?: true
   latestRevisionVersion?: true
   latestPublishedVersion?: true
+  reviewNote?: true
   submittedAt?: true
   publishedAt?: true
   deletedAt?: true
@@ -264,6 +270,7 @@ export type BlogGroupByOutputType = {
   status: $Enums.BlogStatus
   latestRevisionVersion: number
   latestPublishedVersion: number | null
+  reviewNote: string | null
   submittedAt: Date | null
   publishedAt: Date | null
   deletedAt: Date | null
@@ -307,6 +314,7 @@ export type BlogWhereInput = {
   status?: Prisma.EnumBlogStatusFilter<"Blog"> | $Enums.BlogStatus
   latestRevisionVersion?: Prisma.IntFilter<"Blog"> | number
   latestPublishedVersion?: Prisma.IntNullableFilter<"Blog"> | number | null
+  reviewNote?: Prisma.StringNullableFilter<"Blog"> | string | null
   submittedAt?: Prisma.DateTimeNullableFilter<"Blog"> | Date | string | null
   publishedAt?: Prisma.DateTimeNullableFilter<"Blog"> | Date | string | null
   deletedAt?: Prisma.DateTimeNullableFilter<"Blog"> | Date | string | null
@@ -331,6 +339,7 @@ export type BlogOrderByWithRelationInput = {
   status?: Prisma.SortOrder
   latestRevisionVersion?: Prisma.SortOrder
   latestPublishedVersion?: Prisma.SortOrderInput | Prisma.SortOrder
+  reviewNote?: Prisma.SortOrderInput | Prisma.SortOrder
   submittedAt?: Prisma.SortOrderInput | Prisma.SortOrder
   publishedAt?: Prisma.SortOrderInput | Prisma.SortOrder
   deletedAt?: Prisma.SortOrderInput | Prisma.SortOrder
@@ -358,6 +367,7 @@ export type BlogWhereUniqueInput = Prisma.AtLeast<{
   status?: Prisma.EnumBlogStatusFilter<"Blog"> | $Enums.BlogStatus
   latestRevisionVersion?: Prisma.IntFilter<"Blog"> | number
   latestPublishedVersion?: Prisma.IntNullableFilter<"Blog"> | number | null
+  reviewNote?: Prisma.StringNullableFilter<"Blog"> | string | null
   submittedAt?: Prisma.DateTimeNullableFilter<"Blog"> | Date | string | null
   publishedAt?: Prisma.DateTimeNullableFilter<"Blog"> | Date | string | null
   deletedAt?: Prisma.DateTimeNullableFilter<"Blog"> | Date | string | null
@@ -382,6 +392,7 @@ export type BlogOrderByWithAggregationInput = {
   status?: Prisma.SortOrder
   latestRevisionVersion?: Prisma.SortOrder
   latestPublishedVersion?: Prisma.SortOrderInput | Prisma.SortOrder
+  reviewNote?: Prisma.SortOrderInput | Prisma.SortOrder
   submittedAt?: Prisma.SortOrderInput | Prisma.SortOrder
   publishedAt?: Prisma.SortOrderInput | Prisma.SortOrder
   deletedAt?: Prisma.SortOrderInput | Prisma.SortOrder
@@ -410,6 +421,7 @@ export type BlogScalarWhereWithAggregatesInput = {
   status?: Prisma.EnumBlogStatusWithAggregatesFilter<"Blog"> | $Enums.BlogStatus
   latestRevisionVersion?: Prisma.IntWithAggregatesFilter<"Blog"> | number
   latestPublishedVersion?: Prisma.IntNullableWithAggregatesFilter<"Blog"> | number | null
+  reviewNote?: Prisma.StringNullableWithAggregatesFilter<"Blog"> | string | null
   submittedAt?: Prisma.DateTimeNullableWithAggregatesFilter<"Blog"> | Date | string | null
   publishedAt?: Prisma.DateTimeNullableWithAggregatesFilter<"Blog"> | Date | string | null
   deletedAt?: Prisma.DateTimeNullableWithAggregatesFilter<"Blog"> | Date | string | null
@@ -428,6 +440,7 @@ export type BlogCreateInput = {
   status?: $Enums.BlogStatus
   latestRevisionVersion?: number
   latestPublishedVersion?: number | null
+  reviewNote?: string | null
   submittedAt?: Date | string | null
   publishedAt?: Date | string | null
   deletedAt?: Date | string | null
@@ -452,6 +465,7 @@ export type BlogUncheckedCreateInput = {
   status?: $Enums.BlogStatus
   latestRevisionVersion?: number
   latestPublishedVersion?: number | null
+  reviewNote?: string | null
   submittedAt?: Date | string | null
   publishedAt?: Date | string | null
   deletedAt?: Date | string | null
@@ -472,6 +486,7 @@ export type BlogUpdateInput = {
   status?: Prisma.EnumBlogStatusFieldUpdateOperationsInput | $Enums.BlogStatus
   latestRevisionVersion?: Prisma.IntFieldUpdateOperationsInput | number
   latestPublishedVersion?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  reviewNote?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   submittedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   publishedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   deletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -496,6 +511,7 @@ export type BlogUncheckedUpdateInput = {
   status?: Prisma.EnumBlogStatusFieldUpdateOperationsInput | $Enums.BlogStatus
   latestRevisionVersion?: Prisma.IntFieldUpdateOperationsInput | number
   latestPublishedVersion?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  reviewNote?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   submittedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   publishedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   deletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -518,6 +534,7 @@ export type BlogCreateManyInput = {
   status?: $Enums.BlogStatus
   latestRevisionVersion?: number
   latestPublishedVersion?: number | null
+  reviewNote?: string | null
   submittedAt?: Date | string | null
   publishedAt?: Date | string | null
   deletedAt?: Date | string | null
@@ -536,6 +553,7 @@ export type BlogUpdateManyMutationInput = {
   status?: Prisma.EnumBlogStatusFieldUpdateOperationsInput | $Enums.BlogStatus
   latestRevisionVersion?: Prisma.IntFieldUpdateOperationsInput | number
   latestPublishedVersion?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  reviewNote?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   submittedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   publishedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   deletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -556,6 +574,7 @@ export type BlogUncheckedUpdateManyInput = {
   status?: Prisma.EnumBlogStatusFieldUpdateOperationsInput | $Enums.BlogStatus
   latestRevisionVersion?: Prisma.IntFieldUpdateOperationsInput | number
   latestPublishedVersion?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  reviewNote?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   submittedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   publishedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   deletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -594,6 +613,7 @@ export type BlogCountOrderByAggregateInput = {
   status?: Prisma.SortOrder
   latestRevisionVersion?: Prisma.SortOrder
   latestPublishedVersion?: Prisma.SortOrder
+  reviewNote?: Prisma.SortOrder
   submittedAt?: Prisma.SortOrder
   publishedAt?: Prisma.SortOrder
   deletedAt?: Prisma.SortOrder
@@ -618,6 +638,7 @@ export type BlogMaxOrderByAggregateInput = {
   status?: Prisma.SortOrder
   latestRevisionVersion?: Prisma.SortOrder
   latestPublishedVersion?: Prisma.SortOrder
+  reviewNote?: Prisma.SortOrder
   submittedAt?: Prisma.SortOrder
   publishedAt?: Prisma.SortOrder
   deletedAt?: Prisma.SortOrder
@@ -637,6 +658,7 @@ export type BlogMinOrderByAggregateInput = {
   status?: Prisma.SortOrder
   latestRevisionVersion?: Prisma.SortOrder
   latestPublishedVersion?: Prisma.SortOrder
+  reviewNote?: Prisma.SortOrder
   submittedAt?: Prisma.SortOrder
   publishedAt?: Prisma.SortOrder
   deletedAt?: Prisma.SortOrder
@@ -802,6 +824,7 @@ export type BlogCreateWithoutAuthorInput = {
   status?: $Enums.BlogStatus
   latestRevisionVersion?: number
   latestPublishedVersion?: number | null
+  reviewNote?: string | null
   submittedAt?: Date | string | null
   publishedAt?: Date | string | null
   deletedAt?: Date | string | null
@@ -824,6 +847,7 @@ export type BlogUncheckedCreateWithoutAuthorInput = {
   status?: $Enums.BlogStatus
   latestRevisionVersion?: number
   latestPublishedVersion?: number | null
+  reviewNote?: string | null
   submittedAt?: Date | string | null
   publishedAt?: Date | string | null
   deletedAt?: Date | string | null
@@ -854,6 +878,7 @@ export type BlogCreateWithoutReviewerInput = {
   status?: $Enums.BlogStatus
   latestRevisionVersion?: number
   latestPublishedVersion?: number | null
+  reviewNote?: string | null
   submittedAt?: Date | string | null
   publishedAt?: Date | string | null
   deletedAt?: Date | string | null
@@ -876,6 +901,7 @@ export type BlogUncheckedCreateWithoutReviewerInput = {
   status?: $Enums.BlogStatus
   latestRevisionVersion?: number
   latestPublishedVersion?: number | null
+  reviewNote?: string | null
   submittedAt?: Date | string | null
   publishedAt?: Date | string | null
   deletedAt?: Date | string | null
@@ -927,6 +953,7 @@ export type BlogScalarWhereInput = {
   status?: Prisma.EnumBlogStatusFilter<"Blog"> | $Enums.BlogStatus
   latestRevisionVersion?: Prisma.IntFilter<"Blog"> | number
   latestPublishedVersion?: Prisma.IntNullableFilter<"Blog"> | number | null
+  reviewNote?: Prisma.StringNullableFilter<"Blog"> | string | null
   submittedAt?: Prisma.DateTimeNullableFilter<"Blog"> | Date | string | null
   publishedAt?: Prisma.DateTimeNullableFilter<"Blog"> | Date | string | null
   deletedAt?: Prisma.DateTimeNullableFilter<"Blog"> | Date | string | null
@@ -961,6 +988,7 @@ export type BlogCreateWithoutContentsInput = {
   status?: $Enums.BlogStatus
   latestRevisionVersion?: number
   latestPublishedVersion?: number | null
+  reviewNote?: string | null
   submittedAt?: Date | string | null
   publishedAt?: Date | string | null
   deletedAt?: Date | string | null
@@ -984,6 +1012,7 @@ export type BlogUncheckedCreateWithoutContentsInput = {
   status?: $Enums.BlogStatus
   latestRevisionVersion?: number
   latestPublishedVersion?: number | null
+  reviewNote?: string | null
   submittedAt?: Date | string | null
   publishedAt?: Date | string | null
   deletedAt?: Date | string | null
@@ -1019,6 +1048,7 @@ export type BlogUpdateWithoutContentsInput = {
   status?: Prisma.EnumBlogStatusFieldUpdateOperationsInput | $Enums.BlogStatus
   latestRevisionVersion?: Prisma.IntFieldUpdateOperationsInput | number
   latestPublishedVersion?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  reviewNote?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   submittedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   publishedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   deletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -1042,6 +1072,7 @@ export type BlogUncheckedUpdateWithoutContentsInput = {
   status?: Prisma.EnumBlogStatusFieldUpdateOperationsInput | $Enums.BlogStatus
   latestRevisionVersion?: Prisma.IntFieldUpdateOperationsInput | number
   latestPublishedVersion?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  reviewNote?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   submittedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   publishedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   deletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -1061,6 +1092,7 @@ export type BlogCreateWithoutAuditLogsInput = {
   status?: $Enums.BlogStatus
   latestRevisionVersion?: number
   latestPublishedVersion?: number | null
+  reviewNote?: string | null
   submittedAt?: Date | string | null
   publishedAt?: Date | string | null
   deletedAt?: Date | string | null
@@ -1084,6 +1116,7 @@ export type BlogUncheckedCreateWithoutAuditLogsInput = {
   status?: $Enums.BlogStatus
   latestRevisionVersion?: number
   latestPublishedVersion?: number | null
+  reviewNote?: string | null
   submittedAt?: Date | string | null
   publishedAt?: Date | string | null
   deletedAt?: Date | string | null
@@ -1119,6 +1152,7 @@ export type BlogUpdateWithoutAuditLogsInput = {
   status?: Prisma.EnumBlogStatusFieldUpdateOperationsInput | $Enums.BlogStatus
   latestRevisionVersion?: Prisma.IntFieldUpdateOperationsInput | number
   latestPublishedVersion?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  reviewNote?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   submittedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   publishedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   deletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -1142,6 +1176,7 @@ export type BlogUncheckedUpdateWithoutAuditLogsInput = {
   status?: Prisma.EnumBlogStatusFieldUpdateOperationsInput | $Enums.BlogStatus
   latestRevisionVersion?: Prisma.IntFieldUpdateOperationsInput | number
   latestPublishedVersion?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  reviewNote?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   submittedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   publishedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   deletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -1162,6 +1197,7 @@ export type BlogCreateManyAuthorInput = {
   status?: $Enums.BlogStatus
   latestRevisionVersion?: number
   latestPublishedVersion?: number | null
+  reviewNote?: string | null
   submittedAt?: Date | string | null
   publishedAt?: Date | string | null
   deletedAt?: Date | string | null
@@ -1181,6 +1217,7 @@ export type BlogCreateManyReviewerInput = {
   status?: $Enums.BlogStatus
   latestRevisionVersion?: number
   latestPublishedVersion?: number | null
+  reviewNote?: string | null
   submittedAt?: Date | string | null
   publishedAt?: Date | string | null
   deletedAt?: Date | string | null
@@ -1199,6 +1236,7 @@ export type BlogUpdateWithoutAuthorInput = {
   status?: Prisma.EnumBlogStatusFieldUpdateOperationsInput | $Enums.BlogStatus
   latestRevisionVersion?: Prisma.IntFieldUpdateOperationsInput | number
   latestPublishedVersion?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  reviewNote?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   submittedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   publishedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   deletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -1221,6 +1259,7 @@ export type BlogUncheckedUpdateWithoutAuthorInput = {
   status?: Prisma.EnumBlogStatusFieldUpdateOperationsInput | $Enums.BlogStatus
   latestRevisionVersion?: Prisma.IntFieldUpdateOperationsInput | number
   latestPublishedVersion?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  reviewNote?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   submittedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   publishedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   deletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -1242,6 +1281,7 @@ export type BlogUncheckedUpdateManyWithoutAuthorInput = {
   status?: Prisma.EnumBlogStatusFieldUpdateOperationsInput | $Enums.BlogStatus
   latestRevisionVersion?: Prisma.IntFieldUpdateOperationsInput | number
   latestPublishedVersion?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  reviewNote?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   submittedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   publishedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   deletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -1260,6 +1300,7 @@ export type BlogUpdateWithoutReviewerInput = {
   status?: Prisma.EnumBlogStatusFieldUpdateOperationsInput | $Enums.BlogStatus
   latestRevisionVersion?: Prisma.IntFieldUpdateOperationsInput | number
   latestPublishedVersion?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  reviewNote?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   submittedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   publishedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   deletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -1282,6 +1323,7 @@ export type BlogUncheckedUpdateWithoutReviewerInput = {
   status?: Prisma.EnumBlogStatusFieldUpdateOperationsInput | $Enums.BlogStatus
   latestRevisionVersion?: Prisma.IntFieldUpdateOperationsInput | number
   latestPublishedVersion?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  reviewNote?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   submittedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   publishedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   deletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -1303,6 +1345,7 @@ export type BlogUncheckedUpdateManyWithoutReviewerInput = {
   status?: Prisma.EnumBlogStatusFieldUpdateOperationsInput | $Enums.BlogStatus
   latestRevisionVersion?: Prisma.IntFieldUpdateOperationsInput | number
   latestPublishedVersion?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  reviewNote?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   submittedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   publishedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   deletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -1363,6 +1406,7 @@ export type BlogSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = r
   status?: boolean
   latestRevisionVersion?: boolean
   latestPublishedVersion?: boolean
+  reviewNote?: boolean
   submittedAt?: boolean
   publishedAt?: boolean
   deletedAt?: boolean
@@ -1388,6 +1432,7 @@ export type BlogSelectCreateManyAndReturn<ExtArgs extends runtime.Types.Extensio
   status?: boolean
   latestRevisionVersion?: boolean
   latestPublishedVersion?: boolean
+  reviewNote?: boolean
   submittedAt?: boolean
   publishedAt?: boolean
   deletedAt?: boolean
@@ -1410,6 +1455,7 @@ export type BlogSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.Extensio
   status?: boolean
   latestRevisionVersion?: boolean
   latestPublishedVersion?: boolean
+  reviewNote?: boolean
   submittedAt?: boolean
   publishedAt?: boolean
   deletedAt?: boolean
@@ -1432,6 +1478,7 @@ export type BlogSelectScalar = {
   status?: boolean
   latestRevisionVersion?: boolean
   latestPublishedVersion?: boolean
+  reviewNote?: boolean
   submittedAt?: boolean
   publishedAt?: boolean
   deletedAt?: boolean
@@ -1439,7 +1486,7 @@ export type BlogSelectScalar = {
   modifiedAt?: boolean
 }
 
-export type BlogOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "title" | "slug" | "excerpt" | "thumbnailUrl" | "category" | "tags" | "authorId" | "reviewerId" | "status" | "latestRevisionVersion" | "latestPublishedVersion" | "submittedAt" | "publishedAt" | "deletedAt" | "createdAt" | "modifiedAt", ExtArgs["result"]["blog"]>
+export type BlogOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "title" | "slug" | "excerpt" | "thumbnailUrl" | "category" | "tags" | "authorId" | "reviewerId" | "status" | "latestRevisionVersion" | "latestPublishedVersion" | "reviewNote" | "submittedAt" | "publishedAt" | "deletedAt" | "createdAt" | "modifiedAt", ExtArgs["result"]["blog"]>
 export type BlogInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   author?: boolean | Prisma.UserDefaultArgs<ExtArgs>
   reviewer?: boolean | Prisma.Blog$reviewerArgs<ExtArgs>
@@ -1477,6 +1524,7 @@ export type $BlogPayload<ExtArgs extends runtime.Types.Extensions.InternalArgs =
     status: $Enums.BlogStatus
     latestRevisionVersion: number
     latestPublishedVersion: number | null
+    reviewNote: string | null
     submittedAt: Date | null
     publishedAt: Date | null
     deletedAt: Date | null
@@ -1921,6 +1969,7 @@ export interface BlogFieldRefs {
   readonly status: Prisma.FieldRef<"Blog", 'BlogStatus'>
   readonly latestRevisionVersion: Prisma.FieldRef<"Blog", 'Int'>
   readonly latestPublishedVersion: Prisma.FieldRef<"Blog", 'Int'>
+  readonly reviewNote: Prisma.FieldRef<"Blog", 'String'>
   readonly submittedAt: Prisma.FieldRef<"Blog", 'DateTime'>
   readonly publishedAt: Prisma.FieldRef<"Blog", 'DateTime'>
   readonly deletedAt: Prisma.FieldRef<"Blog", 'DateTime'>

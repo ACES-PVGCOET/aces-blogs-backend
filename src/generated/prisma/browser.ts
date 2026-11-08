@@ -42,3 +42,8 @@ export type BlogAuditLog = Prisma.BlogAuditLogModel
  * 
  */
 export type RoleChangeLog = Prisma.RoleChangeLogModel
+/**
+ * Model Category
+ * 
+ */
+export type Category = Prisma.CategoryModel

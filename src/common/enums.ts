@@ -1,12 +1,1 @@
-export enum UserRole {
-  READER = 'READER',
-  WRITER = 'WRITER', // the "author" role
-  REVIEWER = 'REVIEWER',
-  ADMIN = 'ADMIN',
-}
-
-export enum UserStatus {
-  ACTIVE = 'ACTIVE',
-  DELETED = 'DELETED',
-  BLOCKED = 'BLOCKED',
-}
+export { UserRole, UserStatus, BlogStatus } from '../generated/prisma/client.js';

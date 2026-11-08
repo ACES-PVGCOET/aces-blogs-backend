@@ -5,10 +5,10 @@
  *
  * The database name must contain "test": its schema is DROPPED and re-migrated before the run.
  */
-import { UserRole, UserStatus, BlogStatus } from '@prisma/client';
-import { hasContent } from '../src/blog/internal/validation/tiptap-content';
-import { CLOUD_NAME, createTestContext, doc, EMPTY, img, type TestContext, type TestUser } from './support/test-app';
-import { TEST_DATABASE_URL } from './support/database';
+import { UserRole, UserStatus, BlogStatus } from '../src/generated/prisma/client.js';
+import { hasContent } from '../src/admin/internal/validation/tiptap-content.js';
+import { CLOUD_NAME, createTestContext, doc, EMPTY, img, type TestContext, type TestUser } from './support/test-app.js';
+import { TEST_DATABASE_URL } from './support/database.js';
 
 (TEST_DATABASE_URL ? describe : describe.skip)('author blog API', () => {
   let t: TestContext;

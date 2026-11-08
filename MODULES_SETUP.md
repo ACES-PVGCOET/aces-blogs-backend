@@ -1,22 +1,37 @@
-# User, category and upload module additions
+# Module Configuration & Setup
 
-These changes are based on the existing Prisma project and retain its ESM imports, PrismaService, generated Prisma client conventions, JWT cookie strategy, and `/api/v1` prefix.
+This document outlines the setup details for all domain modules in the unified `aces-blogs-backend`.
 
-## Before running
-1. Copy your existing `.env` into this project; never commit it.
-2. Install the new dependencies: `npm install` (adds `cloudinary` and `multer`).
-3. Regenerate Prisma client: `npx prisma generate`.
-4. Review the category migration, then apply it using the team's normal migration process (`npx prisma migrate deploy` in an environment where DATABASE_URL points to the intended database).
-5. Configure `CLOUDINARY_CLOUD_NAME`, `CLOUDINARY_API_KEY`, and `CLOUDINARY_API_SECRET` to test uploads.
-6. Run `npm run build` and `npm test`.
+---
 
-## Endpoints added
-- `GET /api/v1/users/me` (authenticated)
-- `PATCH /api/v1/users/me` (authenticated)
-- `GET /api/v1/users?page=1&limit=10&role=READER&status=ACTIVE&search=word` (ADMIN)
-- `GET /api/v1/categories` (public)
-- `POST /api/v1/categories` (ADMIN, JSON `{ "name": "Technology" }`)
-- `DELETE /api/v1/categories/:id` (ADMIN)
-- `POST /api/v1/uploads/image` (ADMIN; multipart form field `file`)
+## 1. Domain Modules Summary
 
-The existing service methods `findById`, role/status changes, self-lockout protection, session-version invalidation and JWT active-status check are preserved. `createUser` is an admin-only service operation; no public signup endpoint has been added because the teammate's existing auth design did not define one. Category records are separate from the blog's existing string category field; connecting category IDs to blogs requires a coordinated schema/API change and is intentionally not silently imposed here.
+| Module | Route Prefix | Primary Responsibilities |
+| :--- | :--- | :--- |
+| **`AuthModule`** | `/api/v1/auth` | Credentials validation, argon2 hashing, JWT signing, `aces_session` cookie management, and multi-device session revocation. |
+| **`UsersModule`** | `/api/v1/users` | User profile retrieval, profile updates, and admin user listing. |
+| **`BlogsModule`** | `/api/v1/blogs` | Authoring drafts, revision saves with optimistic concurrency, public blog search, and reader views. |
+| **`ReviewerModule`** | `/api/v1/reviewer` | Review queue inspection, side-by-side diff comparison, approval publishing, and revision rejection with reviewer notes. |
+| **`AdminModule`** | `/api/v1/admin` | User role mutations with audit logging, reviewer workload tracking, direct blog publishing, and soft-delete/restore operations. |
+| **`CategoriesModule`** | `/api/v1/categories` | Blog category catalog management with referential protection against deleting categories in active use. |
+| **`UploadsModule`** | `/api/v1/uploads` | Multer-backed multipart image upload handling with Cloudinary storage. |
+| **`PrismaModule`** | Global | Global database connection pooling via `@prisma/adapter-pg`. |
+
+---
+
+## 2. Environment Dependencies
+
+Ensure the following variables are defined in `.env`:
+- `DATABASE_URL`: PostgreSQL connection URL
+- `JWT_SECRET`: Signing secret for authentication tokens
+- `CLOUDINARY_CLOUD_NAME`, `CLOUDINARY_API_KEY`, `CLOUDINARY_API_SECRET`: Required for image uploads
+- `FRONTEND_ORIGIN`: Allowed origins for CORS credentials
+
+---
+
+## 3. Automated Seeding
+
+Run the database seeder to initialize default categories (`Technology`, `Design`, `Events`, `Announcements`, `Tutorials`) and super admin credentials:
+```bash
+npm run seed
+```

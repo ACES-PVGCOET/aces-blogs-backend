@@ -1,12 +1,12 @@
 import { ExecutionContext, INestApplication, UnauthorizedException, ValidationPipe } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
 import { Test } from '@nestjs/testing';
-import { type BlogStatus, UserRole, UserStatus } from '@prisma/client';
-import * as request from 'supertest';
-import { BlogModule } from '../../src/blog';
-import { JwtAuthGuard } from '../../src/common';
-import { PrismaModule, PrismaService } from '../../src/prisma';
-import { assertSafeTestDatabase, TEST_DATABASE_URL } from './database';
+import { type BlogStatus, UserRole, UserStatus } from '../../src/generated/prisma/client.js';
+import request from 'supertest';
+import { BlogsModule } from '../../src/blogs/blogs.module.js';
+import { JwtAuthGuard } from '../../src/common/index.js';
+import { PrismaModule, PrismaService } from '../../src/prisma/index.js';
+import { assertSafeTestDatabase, TEST_DATABASE_URL } from './database.js';
 
 export const CLOUD_NAME = 'test-cloud';
 export const img = (name = 'a.png') => `https://res.cloudinary.com/${CLOUD_NAME}/image/upload/v1/${name}`;
@@ -74,7 +74,7 @@ export async function createTestContext(): Promise<TestContext> {
   };
 
   const moduleRef = await Test.createTestingModule({
-    imports: [ConfigModule.forRoot({ isGlobal: true, ignoreEnvFile: true }), PrismaModule, BlogModule],
+    imports: [ConfigModule.forRoot({ isGlobal: true, ignoreEnvFile: true }), PrismaModule, BlogsModule],
   })
     .overrideGuard(JwtAuthGuard)
     .useValue(testGuard)

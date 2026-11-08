@@ -1,5 +1,5 @@
 import { SetMetadata } from '@nestjs/common';
-import { UserRole } from './enums';
+import { UserRole } from './enums.js';
 
 export const ROLES_KEY = 'roles';
 /** @Roles(UserRole.WRITER) = only these exact roles. Use together with JwtAuthGuard and RolesGuard. */

@@ -11,9 +11,9 @@ import {
   THUMBNAIL_MAX_LENGTH,
   TITLE_MAX_LENGTH,
   TITLE_MIN_LENGTH,
-} from '../../internal/admin.constants';
-import { IsCloudinaryUrl } from '../../internal/validation/cloudinary-url';
-import { trim } from './common';
+} from '../../internal/admin.constants.js';
+import { IsCloudinaryUrl } from '../../internal/validation/cloudinary-url.js';
+import { trim } from './common.js';
 
 export const SLUG_PATTERN = /^[a-z0-9]+(?:-[a-z0-9]+)*$/;
 const SLUG_MESSAGE = 'slug must be lowercase letters, numbers and single hyphens';
